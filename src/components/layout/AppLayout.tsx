@@ -85,7 +85,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
                 EcoTrack
               </span>
             </div>
-            <SidebarTrigger asChild>
+            <SidebarTrigger>
               <Button variant="ghost" size="icon">
                 <Menu size={20} />
               </Button>
