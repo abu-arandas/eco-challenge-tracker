@@ -100,6 +100,8 @@ export type Database = {
           full_name: string | null
           id: string
           location: string | null
+          total_carbon_saved: number | null
+          total_points: number | null
           updated_at: string | null
           username: string | null
         }
@@ -109,6 +111,8 @@ export type Database = {
           full_name?: string | null
           id: string
           location?: string | null
+          total_carbon_saved?: number | null
+          total_points?: number | null
           updated_at?: string | null
           username?: string | null
         }
@@ -118,6 +122,8 @@ export type Database = {
           full_name?: string | null
           id?: string
           location?: string | null
+          total_carbon_saved?: number | null
+          total_points?: number | null
           updated_at?: string | null
           username?: string | null
         }

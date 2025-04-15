@@ -1,6 +1,6 @@
-
 import React from 'react';
 import AppLayout from '@/components/layout/AppLayout';
+import { useProfile } from '@/hooks/useProfile';
 import { 
   EcoCard, 
   CardContent, 
@@ -54,6 +54,29 @@ const badges = [
 ];
 
 const Profile = () => {
+  const { profile, isLoading, updateProfile } = useProfile();
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          Loading...
+        </div>
+      </AppLayout>
+    );
+  }
+
+  const handleProfileUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    updateProfile({
+      full_name: formData.get('display-name') as string,
+      username: formData.get('username') as string,
+      location: formData.get('location') as string,
+    });
+  };
+
   return (
     <AppLayout>
       <div className="mb-6">
@@ -67,34 +90,25 @@ const Profile = () => {
           <CardContent className="pt-6 text-center">
             <div className="mb-4 flex flex-col items-center">
               <Avatar className="h-20 w-20 mb-4">
-                <AvatarImage src="https://i.pravatar.cc/150?u=ecouser" />
-                <AvatarFallback className="bg-eco-primary text-white text-lg">EC</AvatarFallback>
+                <AvatarImage src={profile?.avatar_url || "https://i.pravatar.cc/150?u=ecouser"} />
+                <AvatarFallback className="bg-eco-primary text-white text-lg">
+                  {profile?.username?.charAt(0).toUpperCase() || 'U'}
+                </AvatarFallback>
               </Avatar>
-              <h2 className="text-2xl font-bold">Eco Hero</h2>
-              <p className="text-eco-neutral">@ecohero</p>
+              <h2 className="text-2xl font-bold">{profile?.full_name || 'Eco Hero'}</h2>
+              <p className="text-eco-neutral">@{profile?.username || 'username'}</p>
             </div>
             <div className="flex justify-center gap-4 mb-4 text-center">
               <div className="text-center">
-                <div className="text-xl font-bold text-eco-primary">348</div>
+                <div className="text-xl font-bold text-eco-primary">{profile?.total_carbon_saved || 0}</div>
                 <div className="text-xs text-eco-neutral">CO₂ Saved (kg)</div>
               </div>
               <div className="border-r border-gray-200"></div>
               <div className="text-center">
-                <div className="text-xl font-bold text-eco-primary">7</div>
-                <div className="text-xs text-eco-neutral">Badges</div>
-              </div>
-              <div className="border-r border-gray-200"></div>
-              <div className="text-center">
-                <div className="text-xl font-bold text-eco-primary">3</div>
-                <div className="text-xs text-eco-neutral">Challenges</div>
+                <div className="text-xl font-bold text-eco-primary">{profile?.total_points || 0}</div>
+                <div className="text-xs text-eco-neutral">Points</div>
               </div>
             </div>
-            <div className="flex justify-center mb-4">
-              <Badge className="bg-emerald-100 text-emerald-700 border-0">Eco Enthusiast</Badge>
-            </div>
-            <Button variant="outline" className="w-full border-eco-primary text-eco-primary hover:bg-eco-primary/10">
-              Edit Profile
-            </Button>
           </CardContent>
         </EcoCard>
         
@@ -152,15 +166,15 @@ const Profile = () => {
                   <CardDescription>Manage your account details</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form className="space-y-4">
+                  <form className="space-y-4" onSubmit={handleProfileUpdate}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="display-name">Display Name</Label>
-                        <Input id="display-name" defaultValue="Eco Hero" />
+                        <Input id="display-name" defaultValue={profile?.full_name || 'Eco Hero'} />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="username">Username</Label>
-                        <Input id="username" defaultValue="ecohero" />
+                        <Input id="username" defaultValue={profile?.username || 'username'} />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
@@ -168,7 +182,7 @@ const Profile = () => {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="location">Location</Label>
-                        <Input id="location" defaultValue="San Francisco, CA" />
+                        <Input id="location" defaultValue={profile?.location || 'San Francisco, CA'} />
                       </div>
                     </div>
                     <div className="flex justify-end">
@@ -266,7 +280,6 @@ const Profile = () => {
   );
 };
 
-// Badge component
 const Badge = ({ className, children }: { className?: string, children: React.ReactNode }) => {
   return (
     <span className={`px-2 py-1 rounded-full text-xs font-medium ${className}`}>
@@ -275,7 +288,6 @@ const Badge = ({ className, children }: { className?: string, children: React.Re
   );
 };
 
-// Switch component
 const Switch = ({ id, defaultChecked }: { id: string, defaultChecked?: boolean }) => {
   return (
     <div className="flex items-center">
