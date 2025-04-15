@@ -1,0 +1,106 @@
+
+import React from 'react';
+import { Award, Calendar, Target } from 'lucide-react';
+import { 
+  EcoCard, 
+  CardContent, 
+  CardHeader, 
+  CardTitle, 
+  CardDescription, 
+  CardFooter 
+} from '@/components/ui/eco-card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
+
+interface ChallengeCardProps {
+  challenge: {
+    id: string;
+    title: string;
+    description: string;
+    points: number;
+    start_date: string;
+    end_date: string;
+    user_challenges?: {
+      status: string;
+      completed_at: string | null;
+    }[];
+  };
+  onJoin: (id: string) => void;
+  isJoining: boolean;
+}
+
+const ChallengeCard = ({ challenge, onJoin, isJoining }: ChallengeCardProps) => {
+  const userChallenge = challenge.user_challenges?.[0];
+  const status = userChallenge?.status || 'available';
+  const isCompleted = status === 'completed';
+  const isActive = status === 'in_progress';
+  
+  return (
+    <EcoCard 
+      hover="lift" 
+      className={isActive ? 'border-l-4 border-l-eco-primary' : ''}
+    >
+      <CardHeader>
+        <div className="flex justify-between items-start">
+          <div className="flex items-center gap-2">
+            <Award className="h-6 w-6 text-eco-primary" />
+            <CardTitle className="text-lg">{challenge.title}</CardTitle>
+          </div>
+          <Badge variant={isCompleted ? "secondary" : "outline"}>
+            {isCompleted ? "Completed" : `${challenge.points} points`}
+          </Badge>
+        </div>
+        <CardDescription>{challenge.description}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-4">
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-eco-neutral" />
+              <span>Starts: {format(new Date(challenge.start_date), 'MMM d, yyyy')}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Target className="h-4 w-4 text-eco-neutral" />
+              <span>Ends: {format(new Date(challenge.end_date), 'MMM d, yyyy')}</span>
+            </div>
+          </div>
+          
+          {isActive && (
+            <div>
+              <div className="flex justify-between text-sm mb-1">
+                <span>Progress</span>
+                <span>In Progress</span>
+              </div>
+              <Progress value={33} className="h-2" />
+            </div>
+          )}
+        </div>
+      </CardContent>
+      <CardFooter>
+        {status === 'available' && (
+          <Button 
+            className="w-full bg-eco-primary hover:bg-eco-primary/80"
+            onClick={() => onJoin(challenge.id)}
+            disabled={isJoining}
+          >
+            Join Challenge
+          </Button>
+        )}
+        {isActive && (
+          <Button className="w-full bg-eco-primary hover:bg-eco-primary/80">
+            Continue Challenge
+          </Button>
+        )}
+        {isCompleted && (
+          <Button className="w-full" variant="outline" disabled>
+            Completed
+          </Button>
+        )}
+      </CardFooter>
+    </EcoCard>
+  );
+};
+
+export default ChallengeCard;

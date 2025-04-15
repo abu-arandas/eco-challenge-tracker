@@ -16,8 +16,9 @@ export function useChallenges() {
         .from("challenges")
         .select(`
           *,
-          user_challenges!inner(*)
+          user_challenges!left(*)
         `)
+        .gte('end_date', new Date().toISOString())
         .order('created_at', { ascending: false });
       
       if (error) throw error;
