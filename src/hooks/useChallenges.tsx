@@ -3,13 +3,14 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { useToast } from "./use-toast";
+import { useCallback } from "react";
 
 export function useChallenges() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: challenges, isLoading } = useQuery({
+  const { data: challenges, isLoading, error } = useQuery({
     queryKey: ["challenges"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -21,14 +22,28 @@ export function useChallenges() {
         .gte('end_date', new Date().toISOString())
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        toast({
+          title: "Error loading challenges",
+          description: error.message,
+          variant: "destructive",
+        });
+        throw error;
+      }
       return data;
     },
   });
 
   const joinChallenge = useMutation({
     mutationFn: async (challengeId: string) => {
-      if (!user) throw new Error("No user");
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to join challenges",
+          variant: "destructive",
+        });
+        throw new Error("No user");
+      }
       
       const { data, error } = await supabase
         .from("user_challenges")
@@ -46,14 +61,14 @@ export function useChallenges() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["challenges"] });
       toast({
-        title: "Challenge joined",
+        title: "Success!",
         description: "You've successfully joined the challenge!",
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: "Error",
-        description: "Failed to join challenge. Please try again.",
+        description: error.message || "Failed to join challenge. Please try again.",
         variant: "destructive",
       });
     },
@@ -62,6 +77,7 @@ export function useChallenges() {
   return {
     challenges,
     isLoading,
+    error,
     joinChallenge: joinChallenge.mutate,
     isJoining: joinChallenge.isPending,
   };

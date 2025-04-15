@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface ChallengeCardProps {
   challenge: {
@@ -40,38 +41,45 @@ const ChallengeCard = ({ challenge, onJoin, isJoining }: ChallengeCardProps) => 
   return (
     <EcoCard 
       hover="lift" 
-      className={isActive ? 'border-l-4 border-l-eco-primary' : ''}
+      className={cn(
+        'transition-all duration-300 ease-in-out',
+        isActive ? 'border-l-4 border-l-eco-primary' : '',
+        'hover:shadow-lg'
+      )}
     >
       <CardHeader>
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-2">
-            <Award className="h-6 w-6 text-eco-primary" />
+            <Award className={cn(
+              "h-6 w-6 transition-colors",
+              isCompleted ? "text-eco-orange" : "text-eco-primary"
+            )} />
             <CardTitle className="text-lg">{challenge.title}</CardTitle>
           </div>
-          <Badge variant={isCompleted ? "secondary" : "outline"}>
+          <Badge variant={isCompleted ? "secondary" : "outline"} className="animate-fade-in">
             {isCompleted ? "Completed" : `${challenge.points} points`}
           </Badge>
         </div>
-        <CardDescription>{challenge.description}</CardDescription>
+        <CardDescription className="line-clamp-2">{challenge.description}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid gap-4">
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-eco-neutral" />
+            <div className="flex items-center gap-2 text-eco-neutral">
+              <Calendar className="h-4 w-4" />
               <span>Starts: {format(new Date(challenge.start_date), 'MMM d, yyyy')}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-eco-neutral" />
+            <div className="flex items-center gap-2 text-eco-neutral">
+              <Target className="h-4 w-4" />
               <span>Ends: {format(new Date(challenge.end_date), 'MMM d, yyyy')}</span>
             </div>
           </div>
           
           {isActive && (
-            <div>
+            <div className="animate-fade-in">
               <div className="flex justify-between text-sm mb-1">
                 <span>Progress</span>
-                <span>In Progress</span>
+                <span className="text-eco-primary">In Progress</span>
               </div>
               <Progress value={33} className="h-2" />
             </div>
@@ -81,20 +89,29 @@ const ChallengeCard = ({ challenge, onJoin, isJoining }: ChallengeCardProps) => 
       <CardFooter>
         {status === 'available' && (
           <Button 
-            className="w-full bg-eco-primary hover:bg-eco-primary/80"
+            className={cn(
+              "w-full bg-eco-primary hover:bg-eco-primary/80 transition-all",
+              "hover:translate-y-[-1px]"
+            )}
             onClick={() => onJoin(challenge.id)}
             disabled={isJoining}
           >
-            Join Challenge
+            {isJoining ? 'Joining...' : 'Join Challenge'}
           </Button>
         )}
         {isActive && (
-          <Button className="w-full bg-eco-primary hover:bg-eco-primary/80">
+          <Button 
+            className="w-full bg-eco-primary hover:bg-eco-primary/80 transition-all"
+          >
             Continue Challenge
           </Button>
         )}
         {isCompleted && (
-          <Button className="w-full" variant="outline" disabled>
+          <Button 
+            className="w-full" 
+            variant="outline" 
+            disabled
+          >
             Completed
           </Button>
         )}
