@@ -28,6 +28,7 @@ export function AuthForm() {
           options: {
             data: {
               username,
+              full_name: username, // Use username as initial full name
             },
           },
         });
@@ -121,4 +122,3 @@ export function AuthForm() {
     </form>
   );
 }
-
