@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Car, Home, ShoppingBag, Utensils } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const getActivityIcon = (type: string) => {
   switch (type) {
@@ -19,17 +20,23 @@ const getActivityIcon = (type: string) => {
 };
 
 export function ActivityList() {
+  const { user } = useAuth();
+
   const { data: activities, isLoading } = useQuery({
-    queryKey: ["activities"],
+    queryKey: ["activities", user?.id],
     queryFn: async () => {
+      if (!user) return [];
+      
       const { data, error } = await supabase
         .from("activities")
         .select("*")
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false });
       
       if (error) throw error;
       return data;
     },
+    enabled: !!user,
   });
 
   if (isLoading) {

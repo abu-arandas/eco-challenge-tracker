@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useQueryClient } from "@tanstack/react-query";
 
 const ACTIVITY_TYPES = [
   { value: "transport", label: "Transport" },
@@ -26,16 +28,30 @@ export function AddActivityForm() {
   const [carbonImpact, setCarbonImpact] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
+      // Check if user is authenticated
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to record an activity.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       const { error } = await supabase.from("activities").insert({
         type,
         description,
         carbon_impact: parseFloat(carbonImpact),
+        user_id: user.id,
       });
 
       if (error) throw error;
@@ -44,6 +60,9 @@ export function AddActivityForm() {
         title: "Success!",
         description: "Activity has been recorded.",
       });
+
+      // Invalidate and refetch activities query
+      queryClient.invalidateQueries({ queryKey: ["activities"] });
 
       // Reset form
       setType("");
